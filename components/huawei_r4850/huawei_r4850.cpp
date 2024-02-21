@@ -108,7 +108,7 @@ void HuaweiR4850Component::on_frame(uint32_t can_id, bool rtr, std::vector<uint8
     switch (signal_id) {
       case R48xx_DATA_OPERATION_TIME:
         conv_value = value;
-        // this->publish_sensor_state_(this->input_power_sensor_, conv_value);
+        this->publish_sensor_state_(this->operation_hours_sensor_, conv_value);
         ESP_LOGI(TAG, "Operation time: %f hour", conv_value);
         break;
       
@@ -185,7 +185,7 @@ void HuaweiR4850Component::on_frame(uint32_t can_id, bool rtr, std::vector<uint8
 
       case R48xx_DATA_ALARM_STATE:
         conv_value = value;
-        // this->publish_sensor_state_(this->output_current_sensor_, conv_value);
+        this->publish_sensor_state_(this->alarm_state_sensor_, conv_value);
         ESP_LOGI(TAG, "Alarm state: %08X", value);
 
         // this usually is the last message
