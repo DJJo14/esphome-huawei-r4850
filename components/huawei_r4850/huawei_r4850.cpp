@@ -13,19 +13,22 @@ static const char *const TAG = "huawei_r4850";
 static const uint32_t CAN_ID_REQUEST = 0x108040FE;
 static const uint32_t CAN_ID_DATA = 0x1081407F;
 static const uint32_t CAN_ID_SET = 0x108180FE;
+static const uint32_t CAN_ID_MASK = 0x0000FF00;
 
-static const uint8_t R48xx_DATA_INPUT_POWER = 0x70;
-static const uint8_t R48xx_DATA_INPUT_FREQ = 0x71;
-static const uint8_t R48xx_DATA_INPUT_CURRENT = 0x72;
-static const uint8_t R48xx_DATA_OUTPUT_POWER = 0x73;
-static const uint8_t R48xx_DATA_EFFICIENCY = 0x74;
-static const uint8_t R48xx_DATA_OUTPUT_VOLTAGE = 0x75;
-static const uint8_t R48xx_DATA_OUTPUT_CURRENT_MAX = 0x76;
-static const uint8_t R48xx_DATA_INPUT_VOLTAGE = 0x78;
-static const uint8_t R48xx_DATA_OUTPUT_TEMPERATURE = 0x7F;
-static const uint8_t R48xx_DATA_INPUT_TEMPERATURE = 0x80;
-static const uint8_t R48xx_DATA_OUTPUT_CURRENT = 0x81;
-static const uint8_t R48xx_DATA_OUTPUT_CURRENT1 = 0x82;
+static const uint16_t R48xx_DATA_OPERATION_TIME = 0x010E;
+static const uint16_t R48xx_DATA_INPUT_POWER = 0x0170;
+static const uint16_t R48xx_DATA_INPUT_FREQ = 0x0171;
+static const uint16_t R48xx_DATA_INPUT_CURRENT = 0x0172;
+static const uint16_t R48xx_DATA_OUTPUT_POWER = 0x0173;
+static const uint16_t R48xx_DATA_EFFICIENCY = 0x0174;
+static const uint16_t R48xx_DATA_OUTPUT_VOLTAGE = 0x0175;
+static const uint16_t R48xx_DATA_OUTPUT_CURRENT_MAX = 0x0176;
+static const uint16_t R48xx_DATA_INPUT_VOLTAGE = 0x0178;
+static const uint16_t R48xx_DATA_OUTPUT_TEMPERATURE = 0x017F;
+static const uint16_t R48xx_DATA_INPUT_TEMPERATURE = 0x0180;
+static const uint16_t R48xx_DATA_OUTPUT_CURRENT = 0x0181;
+static const uint16_t R48xx_DATA_OUTPUT_CURRENT1 = 0x0182;
+static const uint16_t R48xx_DATA_ALARM_STATE = 0x0183;
 
 HuaweiR4850Component::HuaweiR4850Component(canbus::Canbus *canbus) { this->canbus = canbus; }
 
@@ -96,10 +99,19 @@ void HuaweiR4850Component::set_offline_values() {
 }
 
 void HuaweiR4850Component::on_frame(uint32_t can_id, bool rtr, std::vector<uint8_t> &data) {
-  if (can_id == CAN_ID_DATA) {
+  uint16_t signal_id = data[1] + ((data[0] & 0xF) << 8);
+  if ((can_id & CAN_ID_MASK) == (CAN_ID_DATA & CAN_ID_MASK)) 
+  {
     uint32_t value = (data[4] << 24) + (data[5] << 16) + (data[6] << 8) + data[7];
     float conv_value = 0;
-    switch (data[1]) {
+    
+    switch (signal_id) {
+      case R48xx_DATA_OPERATION_TIME:
+        conv_value = value;
+        // this->publish_sensor_state_(this->input_power_sensor_, conv_value);
+        ESP_LOGV(TAG, "Operation time: %f hour", conv_value);
+        break;
+      
       case R48xx_DATA_INPUT_POWER:
         conv_value = value / 1024.0;
         this->publish_sensor_state_(this->input_power_sensor_, conv_value);
@@ -170,14 +182,23 @@ void HuaweiR4850Component::on_frame(uint32_t can_id, bool rtr, std::vector<uint8
         this->publish_sensor_state_(this->output_current_sensor_, conv_value);
         ESP_LOGV(TAG, "Output current: %f", conv_value);
 
+      case R48xx_DATA_ALARM_STATE:
+        conv_value = value;
+        // this->publish_sensor_state_(this->output_current_sensor_, conv_value);
+        ESP_LOGV(TAG, "Alarm state: %08X", value);
+
         // this usually is the last message
-        this->lastUpdate_ = millis();
         break;
 
       default:
-        // printf("Unknown parameter 0x%02X, 0x%04X\r\n",frame[1], value);
+        printf("Unknown parameter 0x%4X, 0x%08X\r\n" signal_id, value);
         break;
     }
+    this->lastUpdate_ = millis();
+  }
+  else
+  {
+    printf("Unknown ID 0x%8X, 0x%04X\r\n" can_id, signal_id);
   }
 }
 
