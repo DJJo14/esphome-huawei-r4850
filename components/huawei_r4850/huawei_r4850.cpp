@@ -191,14 +191,14 @@ void HuaweiR4850Component::on_frame(uint32_t can_id, bool rtr, std::vector<uint8
         break;
 
       default:
-        printf("Unknown parameter 0x%4X, 0x%08X\r\n" signal_id, value);
+        printf("Unknown parameter 0x%4X, 0x%08X\r\n", signal_id, value);
         break;
     }
     this->lastUpdate_ = millis();
   }
   else
   {
-    printf("Unknown ID 0x%8X, 0x%04X\r\n" can_id, signal_id);
+    printf("Unknown ID 0x%8X, 0x%04X\r\n", can_id, signal_id);
   }
 }
 
