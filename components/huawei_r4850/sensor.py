@@ -7,20 +7,24 @@ from esphome.const import (
     DEVICE_CLASS_TEMPERATURE,
     DEVICE_CLASS_FREQUENCY,
     DEVICE_CLASS_POWER,
+    DEVICE_CLASS_DURATION,
     STATE_CLASS_MEASUREMENT,
     UNIT_VOLT,
     UNIT_HERTZ,
     UNIT_AMPERE,
     UNIT_PERCENT,
     UNIT_CELSIUS,
+    UNIT_HOUR,
     UNIT_WATT,
     ICON_FLASH,
     ICON_PERCENT,
     ICON_THERMOMETER,
     ICON_CURRENT_AC,
+    ICON_TIMER
 )
 from . import HuaweiR4850Component, CONF_HUAWEI_R4850_ID
 
+CONF_OPERATION_HOURS = "operation_hours"
 CONF_INPUT_VOLTAGE = "input_voltage"
 CONF_INPUT_FREQUENCY = "input_frequency"
 CONF_INPUT_CURRENT = "input_current"
@@ -32,9 +36,11 @@ CONF_OUTPUT_CURRENT = "output_current"
 CONF_MAX_OUTPUT_CURRENT = "max_output_current"
 CONF_OUTPUT_POWER = "output_power"
 CONF_OUTPUT_TEMP = "output_temp"
+CONF_ALARM_STATE = "alarm_state"
 
 
 TYPES = [
+    CONF_OPERATION_HOURS,
     CONF_INPUT_VOLTAGE,
     CONF_INPUT_FREQUENCY,
     CONF_INPUT_CURRENT,
@@ -43,9 +49,10 @@ TYPES = [
     CONF_EFFICIENCY,
     CONF_OUTPUT_VOLTAGE,
     CONF_OUTPUT_CURRENT,
-    # CONF_MAX_OUTPUT_CURRENT,
+    CONF_MAX_OUTPUT_CURRENT,
     CONF_OUTPUT_POWER,
     CONF_OUTPUT_TEMP,
+    CONF_ALARM_STATE,
 ]
 
 
@@ -53,6 +60,13 @@ CONFIG_SCHEMA = cv.All(
     cv.Schema(
         {
             cv.GenerateID(CONF_HUAWEI_R4850_ID): cv.use_id(HuaweiR4850Component),
+            cv.Optional(CONF_OPERATION_HOURS): sensor.sensor_schema(
+                unit_of_measurement=UNIT_HOUR,
+                icon=ICON_TIMER,
+                accuracy_decimals=0,
+                device_class=DEVICE_CLASS_DURATION,
+                state_class=STATE_CLASS_MEASUREMENT,
+            ),
             cv.Optional(CONF_INPUT_VOLTAGE): sensor.sensor_schema(
                 unit_of_measurement=UNIT_VOLT,
                 icon=ICON_FLASH,
@@ -108,13 +122,13 @@ CONFIG_SCHEMA = cv.All(
                 device_class=DEVICE_CLASS_CURRENT,
                 state_class=STATE_CLASS_MEASUREMENT,
             ),
-            # cv.Optional(CONF_MAX_OUTPUT_CURRENT): sensor.sensor_schema(
-            #     unit_of_measurement=UNIT_AMPERE,
-            #     icon=ICON_CURRENT_AC,
-            #     accuracy_decimals=2,
-            #     device_class=DEVICE_CLASS_CURRENT,
-            #     state_class=STATE_CLASS_MEASUREMENT,
-            # ),
+            cv.Optional(CONF_MAX_OUTPUT_CURRENT): sensor.sensor_schema(
+                unit_of_measurement=UNIT_AMPERE,
+                icon=ICON_CURRENT_AC,
+                accuracy_decimals=2,
+                device_class=DEVICE_CLASS_CURRENT,
+                state_class=STATE_CLASS_MEASUREMENT,
+            ),
             cv.Optional(CONF_OUTPUT_POWER): sensor.sensor_schema(
                 unit_of_measurement=UNIT_WATT,
                 icon=ICON_FLASH,
@@ -129,6 +143,8 @@ CONFIG_SCHEMA = cv.All(
                 device_class=DEVICE_CLASS_TEMPERATURE,
                 state_class=STATE_CLASS_MEASUREMENT,
             ),
+            cv.Optional(CONF_ALARM_STATE): sensor.sensor_schema(
+            ),   
         }
     ).extend(cv.COMPONENT_SCHEMA)
 )

@@ -18,6 +18,7 @@ class HuaweiR4850Component : public PollingComponent {
   void set_max_output_current(float value, bool offline = false);
   void set_offline_values();
 
+  void set_operation_hours_sensor(sensor::Sensor *operation_hours_sensor) { operation_hours_sensor_ = operation_hours_sensor; }
   void set_input_voltage_sensor(sensor::Sensor *input_voltage_sensor) { input_voltage_sensor_ = input_voltage_sensor; }
   void set_input_frequency_sensor(sensor::Sensor *input_frequency_sensor) {
     input_frequency_sensor_ = input_frequency_sensor;
@@ -37,6 +38,7 @@ class HuaweiR4850Component : public PollingComponent {
   // }
   void set_output_power_sensor(sensor::Sensor *output_power_sensor) { output_power_sensor_ = output_power_sensor; }
   void set_output_temp_sensor(sensor::Sensor *output_temp_sensor) { output_temp_sensor_ = output_temp_sensor; }
+  void set_alarm_state_sensor(sensor::Sensor *alarm_state_sensor) { alarm_state_sensor_ = alarm_state_sensor; }
 
   void set_output_voltage_number(number::Number *output_voltage_number) {
     output_voltage_number_ = output_voltage_number;
@@ -49,6 +51,7 @@ class HuaweiR4850Component : public PollingComponent {
   canbus::Canbus *canbus;
   uint32_t lastUpdate_;
 
+  sensor::Sensor *operation_hours_sensor_{nullptr};
   sensor::Sensor *input_voltage_sensor_{nullptr};
   sensor::Sensor *input_frequency_sensor_{nullptr};
   sensor::Sensor *input_current_sensor_{nullptr};
@@ -57,9 +60,10 @@ class HuaweiR4850Component : public PollingComponent {
   sensor::Sensor *efficiency_sensor_{nullptr};
   sensor::Sensor *output_voltage_sensor_{nullptr};
   sensor::Sensor *output_current_sensor_{nullptr};
-  // sensor::Sensor *max_output_current_sensor_{nullptr};
+  sensor::Sensor *max_output_current_sensor_{nullptr};
   sensor::Sensor *output_power_sensor_{nullptr};
   sensor::Sensor *output_temp_sensor_{nullptr};
+  sensor::Sensor *alarm_state_sensor_{nullptr};
 
   number::Number *output_voltage_number_{nullptr};
   number::Number *max_output_current_number_{nullptr};
