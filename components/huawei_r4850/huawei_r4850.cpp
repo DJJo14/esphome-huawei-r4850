@@ -181,6 +181,7 @@ void HuaweiR4850Component::on_frame(uint32_t can_id, bool rtr, std::vector<uint8
         conv_value = value / 1024.0;
         this->publish_sensor_state_(this->output_current_sensor_, conv_value);
         ESP_LOGI(TAG, "Output current: %f", conv_value);
+        break;
 
       case R48xx_DATA_ALARM_STATE:
         conv_value = value;
