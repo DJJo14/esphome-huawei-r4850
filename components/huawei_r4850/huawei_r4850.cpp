@@ -55,6 +55,7 @@ void HuaweiR4850Component::update() {
 
   // no new value for 5* intervall -> set sensors to NAN)
   if (millis() - lastUpdate_ > this->update_interval_ * 5) {
+    this->publish_sensor_state_(this->operation_hours_sensor_, NAN);
     this->publish_sensor_state_(this->input_power_sensor_, NAN);
     this->publish_sensor_state_(this->input_voltage_sensor_, NAN);
     this->publish_sensor_state_(this->input_current_sensor_, NAN);
@@ -62,10 +63,12 @@ void HuaweiR4850Component::update() {
     this->publish_sensor_state_(this->input_frequency_sensor_, NAN);
     this->publish_sensor_state_(this->output_power_sensor_, NAN);
     this->publish_sensor_state_(this->output_current_sensor_, NAN);
+    this->publish_sensor_state_(this->max_output_current_sensor_, NAN);
     this->publish_sensor_state_(this->output_voltage_sensor_, NAN);
     this->publish_sensor_state_(this->output_temp_sensor_, NAN);
     this->publish_sensor_state_(this->efficiency_sensor_, NAN);
     this->publish_number_state_(this->max_output_current_number_, NAN);
+    this->publish_sensor_state_(this->alarm_state_sensor_, NAN);
   }
 }
 
