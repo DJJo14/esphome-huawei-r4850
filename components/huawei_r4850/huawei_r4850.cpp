@@ -208,15 +208,15 @@ void HuaweiR4850Component::on_frame(uint32_t can_id, bool rtr, std::vector<uint8
 
         if (this->output_voltage_number_->has_state() == false)
         {
-          std::vector<uint8_t> data = {0x01, 0x0E, 0, 0, 0, 0, 0, 0};
-          this->canbus->send_data(CAN_ID_INFO_REQUEST, true, data);
+          std::vector<uint8_t> send_data = {0x01, 0x0E, 0, 0, 0, 0, 0, 0};
+          this->canbus->send_data(CAN_ID_INFO_REQUEST, true, send_data);
           ESP_LOGI(TAG, "request voltage");
         }
         // this usually is the last message
         break;
 
       default:
-        ESP_LOGI(TAG, "Unknown parameter 0x%8X 0x%4X, 0x%08X", can_id, signal_id, value);
+        ESP_LOGI(TAG, "Unknown parameter 0x%8X 0x%04X 0x%02X 0x%02X 0x%08X", can_id, signal_id, data[2], data[3], value);
         break;
     }
     this->lastUpdate_ = millis();
