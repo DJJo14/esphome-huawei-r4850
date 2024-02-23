@@ -56,15 +56,15 @@ void HuaweiR4850Component::update() {
   std::vector<uint8_t> data = {0, 0, 0, 0, 0, 0, 0, 0};
   this->canbus->send_data(CAN_ID_REQUEST, true, data);
 
-  ESP_LOGI(TAG, "voltage %f", this->output_voltage_number_->state);
-  if (this->output_voltage_number_->has_state() == false)
-  {
-    std::vector<uint8_t> data = {0, 0, 0, 0, 0, 0, 0, 0};
-    data[0] = (R48xx_DATA_SET_Output_VOLTAGE &0xFF00)>>8;
-    data[1] = (R48xx_DATA_SET_Output_VOLTAGE &0xFF);
-    this->canbus->send_data(CAN_ID_INFO_REQUEST, true, data);
-    ESP_LOGI(TAG, "request voltage");
-  }
+  // ESP_LOGI(TAG, "voltage %f", this->output_voltage_number_->state);
+  // if (this->output_voltage_number_->has_state() == false)
+  // {
+  //   std::vector<uint8_t> data = {0, 0, 0, 0, 0, 0, 0, 0};
+  //   data[0] = (R48xx_DATA_SET_Output_VOLTAGE &0xFF00)>>8;
+  //   data[1] = (R48xx_DATA_SET_Output_VOLTAGE &0xFF);
+  //   this->canbus->send_data(CAN_ID_INFO_REQUEST, true, data);
+  //   ESP_LOGI(TAG, "request voltage");
+  // }
   // no new value for 5* intervall -> set sensors to NAN)
   if (millis() - lastUpdate_ > this->update_interval_ * 5)
   {
@@ -116,7 +116,8 @@ void HuaweiR4850Component::set_offline_values() {
 
 void HuaweiR4850Component::on_frame(uint32_t can_id, bool rtr, std::vector<uint8_t> &data) {
   uint16_t signal_id = data[1] + ((data[0] & 0xF) << 8);
-  if ((can_id & CAN_ID_MASK) == (CAN_ID_DATA & CAN_ID_MASK)) 
+  if ((can_id & CAN_ID_MASK) == (CAN_ID_DATA & CAN_ID_MASK) ||
+      (can_id & CAN_ID_MASK) == (CAN_ID_INFO_REQUEST & CAN_ID_MASK)) 
   {
     uint32_t value = (data[4] << 24) + (data[5] << 16) + (data[6] << 8) + data[7];
     float conv_value = 0;
@@ -217,14 +218,14 @@ void HuaweiR4850Component::on_frame(uint32_t can_id, bool rtr, std::vector<uint8
         break;
 
       default:
-        ESP_LOGI(TAG, "Unknown parameter 0x%4X, 0x%08X\r\n", signal_id, value);
+        ESP_LOGI(TAG, "Unknown parameter 0x%4X, 0x%08X", signal_id, value);
         break;
     }
     this->lastUpdate_ = millis();
   }
   else
   {
-    ESP_LOGI(TAG, "Unknown ID 0x%8X, 0x%04X\r\n", can_id, signal_id);
+    ESP_LOGI(TAG, "Unknown ID 0x%8X, 0x%04X", can_id, signal_id);
   }
 }
 
