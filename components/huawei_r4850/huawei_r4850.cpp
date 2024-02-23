@@ -12,7 +12,7 @@ static const char *const TAG = "huawei_r4850";
 
 static const uint32_t CAN_ID_REQUEST = 0x108040FE;
 static const uint32_t CAN_ID_DATA = 0x1081407F;
-static const uint32_t CAN_ID_INFO_REQUEST = 0x1081507E;
+static const uint32_t CAN_ID_INFO_REQUEST = 0x108150FE;
 static const uint32_t CAN_ID_SET = 0x108180FE;
 static const uint32_t CAN_ID_MASK = 0x0000FF00;
 
@@ -115,6 +115,7 @@ void HuaweiR4850Component::set_offline_values() {
 
 void HuaweiR4850Component::on_frame(uint32_t can_id, bool rtr, std::vector<uint8_t> &data) {
   uint16_t signal_id = data[1] + ((data[0] & 0xF) << 8);
+  printf("Unknown ID 0x%8X, 0x%04X\r\n", can_id, signal_id);
   if ((can_id & CAN_ID_MASK) == (CAN_ID_DATA & CAN_ID_MASK)) 
   {
     uint32_t value = (data[4] << 24) + (data[5] << 16) + (data[6] << 8) + data[7];
