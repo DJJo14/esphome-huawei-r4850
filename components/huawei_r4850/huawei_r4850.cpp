@@ -59,6 +59,7 @@ void HuaweiR4850Component::update() {
   ESP_LOGI(TAG, "voltage %f", this->output_voltage_number_->state);
   if (this->output_voltage_number_->has_state() == false)
   {
+    std::vector<uint8_t> data = {0, 0, 0, 0, 0, 0, 0, 0};
     data[0] = (R48xx_DATA_SET_Output_VOLTAGE &0xFF00)>>8;
     data[1] = (R48xx_DATA_SET_Output_VOLTAGE &0xFF);
     this->canbus->send_data(CAN_ID_INFO_REQUEST, true, data);
@@ -204,6 +205,14 @@ void HuaweiR4850Component::on_frame(uint32_t can_id, bool rtr, std::vector<uint8
         this->publish_sensor_state_(this->alarm_state_sensor_, conv_value);
         ESP_LOGI(TAG, "Alarm state: %08X", value);
 
+        if (this->output_voltage_number_->has_state() == false)
+        {
+          std::vector<uint8_t> data = {0, 0, 0, 0, 0, 0, 0, 0};
+          data[0] = (R48xx_DATA_SET_Output_VOLTAGE &0xFF00)>>8;
+          data[1] = (R48xx_DATA_SET_Output_VOLTAGE &0xFF);
+          this->canbus->send_data(CAN_ID_INFO_REQUEST, true, data);
+          ESP_LOGI(TAG, "request voltage");
+        }
         // this usually is the last message
         break;
 
