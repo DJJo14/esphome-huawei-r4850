@@ -56,7 +56,7 @@ void HuaweiR4850Component::update() {
   std::vector<uint8_t> data = {0, 0, 0, 0, 0, 0, 0, 0};
   this->canbus->send_data(CAN_ID_REQUEST, true, data);
 
-  ESP_LOGI(TAG, "voltage %f", this->output_voltage_number_->state());
+  ESP_LOGI(TAG, "voltage %f", this->output_voltage_number_->state);
   if (this->output_voltage_number_->has_state() == false)
   {
     data[0] = (R48xx_DATA_SET_Output_VOLTAGE &0xFF00)>>8;
