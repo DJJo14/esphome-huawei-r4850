@@ -209,7 +209,7 @@ void HuaweiR4850Component::on_frame(uint32_t can_id, bool rtr, std::vector<uint8
         if (this->output_voltage_number_->has_state() == false)
         {
           std::vector<uint8_t> data = {0, 0x05, 0, 0, 0, 0, 0, 0};
-          this->canbus->send_data(CAN_ID_INFO_REQUEST & 0x01, true, data);
+          this->canbus->send_data(CAN_ID_INFO_REQUEST, true, data);
           ESP_LOGI(TAG, "request voltage");
         }
         // this usually is the last message
