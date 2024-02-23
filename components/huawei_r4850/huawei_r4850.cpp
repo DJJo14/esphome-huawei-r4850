@@ -115,7 +115,6 @@ void HuaweiR4850Component::set_offline_values() {
 
 void HuaweiR4850Component::on_frame(uint32_t can_id, bool rtr, std::vector<uint8_t> &data) {
   uint16_t signal_id = data[1] + ((data[0] & 0xF) << 8);
-  printf("Unknown ID 0x%8X, 0x%04X\r\n", can_id, signal_id);
   if ((can_id & CAN_ID_MASK) == (CAN_ID_DATA & CAN_ID_MASK)) 
   {
     uint32_t value = (data[4] << 24) + (data[5] << 16) + (data[6] << 8) + data[7];
@@ -209,14 +208,14 @@ void HuaweiR4850Component::on_frame(uint32_t can_id, bool rtr, std::vector<uint8
         break;
 
       default:
-        printf("Unknown parameter 0x%4X, 0x%08X\r\n", signal_id, value);
+        ESP_LOGI(TAG, "Unknown parameter 0x%4X, 0x%08X\r\n", signal_id, value);
         break;
     }
     this->lastUpdate_ = millis();
   }
   else
   {
-    printf("Unknown ID 0x%8X, 0x%04X\r\n", can_id, signal_id);
+    ESP_LOGI(TAG, "Unknown ID 0x%8X, 0x%04X\r\n", can_id, signal_id);
   }
 }
 
