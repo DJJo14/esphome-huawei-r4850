@@ -90,10 +90,20 @@ void HuaweiR4850Component::set_output_voltage(float value, bool offline) {
   uint8_t functionCode = 0x0;
   if (offline)
     functionCode += 1;
-  int32_t raw = 1024.0 * value;
-  std::vector<uint8_t> data = {
-      0x1, functionCode, 0x0, 0x0, (uint8_t) (raw >> 24), (uint8_t) (raw >> 16), (uint8_t) (raw >> 8), (uint8_t) raw};
-  this->canbus->send_data(CAN_ID_SET, true, data);
+  if (value == 0 && functionCode == 0 )
+  {
+    int32_t raw = 1024.0 * value;
+    std::vector<uint8_t> data = {
+        0x1, 0x32, 0x0, 0x01, 0, 0, 0, 0;
+    this->canbus->send_data(CAN_ID_SET, true, data);
+  }
+  else
+  {
+    int32_t raw = 1024.0 * value;
+    std::vector<uint8_t> data = {
+        0x1, functionCode, 0x0, 0x0, (uint8_t) (raw >> 24), (uint8_t) (raw >> 16), (uint8_t) (raw >> 8), (uint8_t) raw};
+    this->canbus->send_data(CAN_ID_SET, true, data);
+  }
 }
 
 void HuaweiR4850Component::set_max_output_current(float value, bool offline) {
@@ -209,10 +219,10 @@ void HuaweiR4850Component::on_frame(uint32_t can_id, bool rtr, std::vector<uint8
 
         // if (this->output_voltage_number_->has_state() == false)
         {
-          static uint16_t req_val = 0x1000;
+          static uint16_t req_val = 0x0000;
           req_val++;
           std::vector<uint8_t> send_data = {(uint8_t)(req_val>>8), (uint8_t)(req_val&0xFF), 0, 0, 0, 0, 0, 0};
-          this->canbus->send_data(CAN_ID_BARCODE, true, send_data);
+          this->canbus->send_data(CAN_ID_INFO_REQUEST, true, send_data);
           ESP_LOGI(TAG, "request  %02X %02X", send_data[0], send_data[1]);
         }
         // this usually is the last message
