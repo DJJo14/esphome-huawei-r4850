@@ -12,7 +12,7 @@ static const char *const TAG = "huawei_r4850";
 
 static const uint32_t CAN_ID_REQUEST = 0x108040FE;
 static const uint32_t CAN_ID_DATA = 0x1081407F;
-static const uint32_t CAN_ID_INFO_REQUEST = 0x108050FE; //0x108050FE;
+static const uint32_t CAN_ID_INFO_REQUEST = 0x108050FE; 
 static const uint32_t CAN_ID_BARCODE = 0x1081D2FE;
 static const uint32_t CAN_ID_SET = 0x108180FE;
 static const uint32_t CAN_ID_SET_CONFORM = 0x1081807F;
@@ -61,16 +61,6 @@ void HuaweiR4850Component::update() {
   std::vector<uint8_t> data = {0, 0, 0, 0, 0, 0, 0, 0};
   this->canbus->send_data(CAN_ID_REQUEST, true, data);
 
-
-  // ESP_LOGI(TAG, "voltage %f", this->output_voltage_number_->state);
-  // if (this->output_voltage_number_->has_state() == false)
-  // {
-  //   std::vector<uint8_t> data = {0, 0, 0, 0, 0, 0, 0, 0};
-  //   data[0] = (R48xx_DATA_SET_Output_VOLTAGE &0xFF00)>>8;
-  //   data[1] = (R48xx_DATA_SET_Output_VOLTAGE &0xFF);
-  //   this->canbus->send_data(CAN_ID_INFO_REQUEST, true, data);
-  //   ESP_LOGI(TAG, "request voltage");
-  // }
   // no new value for 5* intervall -> set sensors to NAN)
   if (millis() - lastUpdate_ > this->update_interval_ * 5)
   {
