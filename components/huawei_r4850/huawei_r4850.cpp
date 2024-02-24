@@ -94,7 +94,7 @@ void HuaweiR4850Component::set_output_voltage(float value, bool offline) {
   {
     int32_t raw = 1024.0 * value;
     std::vector<uint8_t> data = {
-        0x1, 0x32, 0x0, 0x01, 0, 0, 0, 0;
+        0x1, 0x32, 0x0, 0x01, 0, 0, 0, 0};
     this->canbus->send_data(CAN_ID_SET, true, data);
   }
   else
