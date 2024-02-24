@@ -3,6 +3,7 @@
 #include "esphome/core/component.h"
 #include "esphome/components/sensor/sensor.h"
 #include "esphome/components/number/number.h"
+#include "esphome/components/switch/switch.h"
 #include "esphome/components/canbus/canbus.h"
 
 namespace esphome {
@@ -16,6 +17,7 @@ class HuaweiR4850Component : public PollingComponent {
 
   void set_output_voltage(float value, bool offline = false);
   void set_max_output_current(float value, bool offline = false);
+  void set_power(bool value);
   void set_offline_values();
 
   void set_operation_hours_sensor(sensor::Sensor *operation_hours_sensor) { operation_hours_sensor_ = operation_hours_sensor; }
@@ -47,6 +49,8 @@ class HuaweiR4850Component : public PollingComponent {
     max_output_current_number_ = max_output_current_number;
   }
 
+  void set_power_switch(switch_::Switch *power_switch) { power_switch_ = power_switch;  }
+
  protected:
   canbus::Canbus *canbus;
   uint32_t lastUpdate_;
@@ -68,10 +72,13 @@ class HuaweiR4850Component : public PollingComponent {
   number::Number *output_voltage_number_{nullptr};
   number::Number *max_output_current_number_{nullptr};
 
+  switch_::Switch *power_switch_{nullptr};
+
   void on_frame(uint32_t can_id, bool rtr, std::vector<uint8_t> &data);
 
   void publish_sensor_state_(sensor::Sensor *sensor, float value);
   void publish_number_state_(number::Number *number, float value);
+  void publish_switch_state_(switch_::Switch *pswitch, const bool &state);
 };
 
 }  // namespace huawei_r4850

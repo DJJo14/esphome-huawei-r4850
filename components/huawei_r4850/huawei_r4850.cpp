@@ -15,7 +15,9 @@ static const uint32_t CAN_ID_DATA = 0x1081407F;
 static const uint32_t CAN_ID_INFO_REQUEST = 0x108050FE; //0x108050FE;
 static const uint32_t CAN_ID_BARCODE = 0x1081D2FE;
 static const uint32_t CAN_ID_SET = 0x108180FE;
-static const uint32_t CAN_ID_MASK = 0x0000FF00;
+static const uint32_t CAN_ID_SET_CONFORM = 0x1081807F;
+static const uint32_t CAN_ID_MASK = 0x0000FFFE;
+
 
 static const uint16_t R48xx_DATA_SET_Output_VOLTAGE = 0x0100;
 
@@ -33,6 +35,8 @@ static const uint16_t R48xx_DATA_INPUT_TEMPERATURE = 0x0180;
 static const uint16_t R48xx_DATA_OUTPUT_CURRENT = 0x0181;
 static const uint16_t R48xx_DATA_OUTPUT_CURRENT1 = 0x0182;
 static const uint16_t R48xx_DATA_ALARM_STATE = 0x0183;
+
+static const uint16_t R48xx_DATA_POWER_STATE = 0x0132;
 
 HuaweiR4850Component::HuaweiR4850Component(canbus::Canbus *canbus) { this->canbus = canbus; }
 
@@ -56,6 +60,7 @@ void HuaweiR4850Component::update() {
   ESP_LOGD(TAG, "Sending request message");
   std::vector<uint8_t> data = {0, 0, 0, 0, 0, 0, 0, 0};
   this->canbus->send_data(CAN_ID_REQUEST, true, data);
+
 
   // ESP_LOGI(TAG, "voltage %f", this->output_voltage_number_->state);
   // if (this->output_voltage_number_->has_state() == false)
@@ -90,20 +95,12 @@ void HuaweiR4850Component::set_output_voltage(float value, bool offline) {
   uint8_t functionCode = 0x0;
   if (offline)
     functionCode += 1;
-  if (value == 0 && functionCode == 0 )
-  {
-    int32_t raw = 1024.0 * value;
-    std::vector<uint8_t> data = {
-        0x1, 0x32, 0x0, 0x01, 0, 0, 0, 0};
-    this->canbus->send_data(CAN_ID_SET, true, data);
-  }
-  else
-  {
-    int32_t raw = 1024.0 * value;
-    std::vector<uint8_t> data = {
-        0x1, functionCode, 0x0, 0x0, (uint8_t) (raw >> 24), (uint8_t) (raw >> 16), (uint8_t) (raw >> 8), (uint8_t) raw};
-    this->canbus->send_data(CAN_ID_SET, true, data);
-  }
+
+  int32_t raw = 1024.0 * value;
+  std::vector<uint8_t> data = {
+      0x1, functionCode, 0x0, 0x0, (uint8_t) (raw >> 24), (uint8_t) (raw >> 16), (uint8_t) (raw >> 8), (uint8_t) raw};
+  this->canbus->send_data(CAN_ID_SET, true, data);
+
 }
 
 void HuaweiR4850Component::set_max_output_current(float value, bool offline) {
@@ -114,6 +111,18 @@ void HuaweiR4850Component::set_max_output_current(float value, bool offline) {
   std::vector<uint8_t> data = {
       0x1, functionCode, 0x0, 0x0, (uint8_t) (raw >> 24), (uint8_t) (raw >> 16), (uint8_t) (raw >> 8), (uint8_t) raw};
   this->canbus->send_data(CAN_ID_SET, true, data);
+}
+
+void HuaweiR4850Component::set_power(bool value) {
+  std::vector<uint8_t> data = {
+      0x1, 0x32, 0x0, 0x00, 0, 0, 0, 0};
+  if(value)
+    data[3] = 0x00;
+  else
+      data[3] = 0x01;
+  ESP_LOGI(TAG, "sending state %02X", value);
+  this->canbus->send_data(CAN_ID_SET, true, data);
+
 }
 
 void HuaweiR4850Component::set_offline_values() {
@@ -128,12 +137,17 @@ void HuaweiR4850Component::set_offline_values() {
 void HuaweiR4850Component::on_frame(uint32_t can_id, bool rtr, std::vector<uint8_t> &data) {
   uint16_t signal_id = data[1] + ((data[0] & 0xF) << 8);
   if ((can_id & CAN_ID_MASK) == (CAN_ID_DATA & CAN_ID_MASK) ||
-      (can_id & CAN_ID_MASK) == (CAN_ID_INFO_REQUEST & CAN_ID_MASK)) 
+      (can_id & CAN_ID_MASK) == (CAN_ID_INFO_REQUEST & CAN_ID_MASK) ||
+      (can_id & CAN_ID_MASK) == (CAN_ID_SET_CONFORM & CAN_ID_MASK) ) 
   {
     uint32_t value = (data[4] << 24) + (data[5] << 16) + (data[6] << 8) + data[7];
     float conv_value = 0;
     
     switch (signal_id) {
+      case R48xx_DATA_POWER_STATE:
+        ESP_LOGI(TAG, "power state conform", conv_value);
+        this->publish_switch_state_(this->power_switch_, (data[3] & 0x01) == 0 );
+        break;
       case R48xx_DATA_OPERATION_TIME:
         conv_value = value;
         this->publish_sensor_state_(this->operation_hours_sensor_, conv_value);
@@ -215,12 +229,12 @@ void HuaweiR4850Component::on_frame(uint32_t can_id, bool rtr, std::vector<uint8
       case R48xx_DATA_ALARM_STATE:
         conv_value = value;
         this->publish_sensor_state_(this->alarm_state_sensor_, conv_value);
-        ESP_LOGI(TAG, "Alarm state: %08X", value);
-
+        ESP_LOGI(TAG, "Alarm state: %08X %02X", value, data[6]);
+        this->publish_switch_state_(this->power_switch_, (data[6] & 0x02) == 0 );
         // if (this->output_voltage_number_->has_state() == false)
         {
-          static uint16_t req_val = 0x0000;
-          req_val++;
+          static uint16_t req_val = 0x0000;  
+          // req_val++;
           std::vector<uint8_t> send_data = {(uint8_t)(req_val>>8), (uint8_t)(req_val&0xFF), 0, 0, 0, 0, 0, 0};
           this->canbus->send_data(CAN_ID_INFO_REQUEST, true, send_data);
           ESP_LOGI(TAG, "request  %02X %02X", send_data[0], send_data[1]);
@@ -253,6 +267,12 @@ void HuaweiR4850Component::publish_sensor_state_(sensor::Sensor *sensor, float v
 void HuaweiR4850Component::publish_number_state_(number::Number *number, float value) {
   if (number) {
     number->publish_state(value);
+  }
+}
+
+void HuaweiR4850Component::publish_switch_state_(switch_::Switch *pswitch, const bool &state) {
+  if (pswitch) {
+    pswitch->publish_state(state);
   }
 }
 

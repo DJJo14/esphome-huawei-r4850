@@ -42,7 +42,7 @@ static bool get_bitrate(canbus::CanSpeed bitrate, twai_timing_config_t *t_config
 bool ESP32Can::setup_internal() {
   twai_general_config_t g_config =
       TWAI_GENERAL_CONFIG_DEFAULT((gpio_num_t) this->tx_, (gpio_num_t) this->rx_, TWAI_MODE_NORMAL);
-  g_config.rx_queue_len = 12;
+  g_config.rx_queue_len = 20;
   twai_filter_config_t f_config = TWAI_FILTER_CONFIG_ACCEPT_ALL();
   twai_timing_config_t t_config;
 
