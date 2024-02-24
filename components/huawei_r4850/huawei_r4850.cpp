@@ -210,9 +210,9 @@ void HuaweiR4850Component::on_frame(uint32_t can_id, bool rtr, std::vector<uint8
         {
           static uint16_t req_val = 0;
           req_val++;
-          std::vector<uint8_t> send_data = {(req_val>>8), (req_val&0xFF), 0, 0, 0, 0, 0, 0};
+          std::vector<uint8_t> send_data = {(uint8_t)(req_val>>8), (uint8_t)(req_val&0xFF), 0, 0, 0, 0, 0, 0};
           this->canbus->send_data(CAN_ID_INFO_REQUEST, true, send_data);
-          ESP_LOGI(TAG, "request voltage");
+          ESP_LOGI(TAG, "request  %02X %02X", send_data[0], send_data[1]);
         }
         // this usually is the last message
         break;
