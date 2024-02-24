@@ -208,7 +208,7 @@ void HuaweiR4850Component::on_frame(uint32_t can_id, bool rtr, std::vector<uint8
 
         // if (this->output_voltage_number_->has_state() == false)
         {
-          static uint16_t req_val = 0;
+          static uint16_t req_val = 0x100;
           req_val++;
           std::vector<uint8_t> send_data = {(uint8_t)(req_val>>8), (uint8_t)(req_val&0xFF), 0, 0, 0, 0, 0, 0};
           this->canbus->send_data(CAN_ID_INFO_REQUEST, true, send_data);
@@ -225,7 +225,7 @@ void HuaweiR4850Component::on_frame(uint32_t can_id, bool rtr, std::vector<uint8
   }
   else
   {
-    ESP_LOGI(TAG, "Unknown ID 0x%8X, 0x%04X", can_id, signal_id);
+    ESP_LOGI(TAG, "Unknown ID 0x%8X, 0x%04X %02X %02X %02X %02X %02X %02X", can_id, signal_id, data[2], data[3], data[4], data[5], data[6], data[7]);
   }
 }
 
