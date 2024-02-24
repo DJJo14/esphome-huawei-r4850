@@ -12,7 +12,7 @@ static const char *const TAG = "huawei_r4850";
 
 static const uint32_t CAN_ID_REQUEST = 0x108040FE;
 static const uint32_t CAN_ID_DATA = 0x1081407F;
-static const uint32_t CAN_ID_INFO_REQUEST = 0x108051FE; //0x108050FE;
+static const uint32_t CAN_ID_INFO_REQUEST = 0x108050FE; //0x108050FE;
 static const uint32_t CAN_ID_SET = 0x108180FE;
 static const uint32_t CAN_ID_MASK = 0x0000FF00;
 
@@ -208,7 +208,7 @@ void HuaweiR4850Component::on_frame(uint32_t can_id, bool rtr, std::vector<uint8
 
         // if (this->output_voltage_number_->has_state() == false)
         {
-          static uint16_t req_val = 0x000;
+          static uint16_t req_val = 0x1000;
           req_val++;
           std::vector<uint8_t> send_data = {(uint8_t)(req_val>>8), (uint8_t)(req_val&0xFF), 0, 0, 0, 0, 0, 0};
           this->canbus->send_data(CAN_ID_INFO_REQUEST, true, send_data);
