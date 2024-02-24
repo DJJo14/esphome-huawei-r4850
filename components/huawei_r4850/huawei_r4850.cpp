@@ -223,6 +223,10 @@ void HuaweiR4850Component::on_frame(uint32_t can_id, bool rtr, std::vector<uint8
     }
     this->lastUpdate_ = millis();
   }
+  else if ((0x1081D27F & CAN_ID_MASK) == (CAN_ID_MASK & can_id) )
+  {
+    ESP_LOGI(TAG, "Unknown ID 0x%8X, 0x%04X %c%c%c%c%c%c", can_id, signal_id, data[2], data[3], data[4], data[5], data[6], data[7]);
+  }
   else
   {
     ESP_LOGI(TAG, "Unknown ID 0x%8X, 0x%04X %02X %02X %02X %02X %02X %02X", can_id, signal_id, data[2], data[3], data[4], data[5], data[6], data[7]);
