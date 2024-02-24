@@ -12,7 +12,8 @@ static const char *const TAG = "huawei_r4850";
 
 static const uint32_t CAN_ID_REQUEST = 0x108040FE;
 static const uint32_t CAN_ID_DATA = 0x1081407F;
-static const uint32_t CAN_ID_INFO_REQUEST = 0x1080D2FE; //0x108050FE;
+static const uint32_t CAN_ID_INFO_REQUEST = 0x108050FE; //0x108050FE;
+static const uint32_t CAN_ID_BARCODE = 0x1081D2FE;
 static const uint32_t CAN_ID_SET = 0x108180FE;
 static const uint32_t CAN_ID_MASK = 0x0000FF00;
 
@@ -211,7 +212,7 @@ void HuaweiR4850Component::on_frame(uint32_t can_id, bool rtr, std::vector<uint8
           static uint16_t req_val = 0x1000;
           req_val++;
           std::vector<uint8_t> send_data = {(uint8_t)(req_val>>8), (uint8_t)(req_val&0xFF), 0, 0, 0, 0, 0, 0};
-          this->canbus->send_data(CAN_ID_INFO_REQUEST, true, send_data);
+          this->canbus->send_data(CAN_ID_BARCODE, true, send_data);
           ESP_LOGI(TAG, "request  %02X %02X", send_data[0], send_data[1]);
         }
         // this usually is the last message
@@ -223,7 +224,7 @@ void HuaweiR4850Component::on_frame(uint32_t can_id, bool rtr, std::vector<uint8
     }
     this->lastUpdate_ = millis();
   }
-  else if ((0x1081D27F & CAN_ID_MASK) == (CAN_ID_MASK & can_id) )
+  else if ((CAN_ID_BARCODE & CAN_ID_MASK) == (CAN_ID_MASK & can_id) )
   {
     ESP_LOGI(TAG, "Unknown ID 0x%8X, 0x%04X %c%c%c%c%c%c", can_id, signal_id, data[2], data[3], data[4], data[5], data[6], data[7]);
   }
