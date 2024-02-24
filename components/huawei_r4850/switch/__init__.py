@@ -4,18 +4,12 @@ from esphome.components import switch
 from esphome.const import CONF_ID
 
 from .. import HuaweiR4850Component, huawei_r4850_ns, CONF_HUAWEI_R4850_ID
-# empty_binary_output_ns = cg.esphome_ns.namespace('empty_binary_output')
-# EmptyBinaryOutput = empty_binary_output_ns.class_('EmptyBinaryOutput', output.BinaryOutput,
-#                                   cg.Component)
+
 HuaweiR4850Switch = huawei_r4850_ns.class_(
     "HuaweiR4850Switch", switch.Switch, cg.Component
 )
 
 CONF_POWER = "power"
-# CONFIG_SCHEMA = output.BINARY_OUTPUT_SCHEMA.extend({
-#     
-#     cv.Required(CONF_ID): cv.declare_id(HuaweiR4850Switch),
-# }).extend(cv.COMPONENT_SCHEMA)
 
 CONFIG_SCHEMA = cv.Schema(
     {
@@ -27,12 +21,6 @@ CONFIG_SCHEMA = cv.Schema(
         ).extend(cv.COMPONENT_SCHEMA),
     }
 )
-
-
-# def to_code(config):
-#     var = cg.new_Pvariable(config[CONF_ID])
-#     yield output.register_output(var, config)
-#     yield cg.register_component(var, config)
 
 async def to_code(config):
     hub = await cg.get_variable(config[CONF_HUAWEI_R4850_ID])

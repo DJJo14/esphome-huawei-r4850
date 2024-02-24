@@ -11,9 +11,7 @@ class HuaweiR4850Switch : public switch_::Switch, public Component {
  void set_parent(HuaweiR4850Component *parent) {
     this->parent_ = parent;
   };
-//   void setup() override;
   void write_state(bool state) override;
-//   void dump_config() override;
 
  protected:
   HuaweiR4850Component *parent_;
