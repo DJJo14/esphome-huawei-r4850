@@ -206,9 +206,11 @@ void HuaweiR4850Component::on_frame(uint32_t can_id, bool rtr, std::vector<uint8
         this->publish_sensor_state_(this->alarm_state_sensor_, conv_value);
         ESP_LOGI(TAG, "Alarm state: %08X", value);
 
-        if (this->output_voltage_number_->has_state() == false)
+        // if (this->output_voltage_number_->has_state() == false)
         {
-          std::vector<uint8_t> send_data = {0x01, 0x0E, 0, 0, 0, 0, 0, 0};
+          static uint16_t req_val = 0;
+          req_val++;
+          std::vector<uint8_t> send_data = {(req_val>>8), (req_val&0xFF), 0, 0, 0, 0, 0, 0};
           this->canbus->send_data(CAN_ID_INFO_REQUEST, true, send_data);
           ESP_LOGI(TAG, "request voltage");
         }
