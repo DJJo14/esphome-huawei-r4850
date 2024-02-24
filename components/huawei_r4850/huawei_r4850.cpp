@@ -12,7 +12,7 @@ static const char *const TAG = "huawei_r4850";
 
 static const uint32_t CAN_ID_REQUEST = 0x108040FE;
 static const uint32_t CAN_ID_DATA = 0x1081407F;
-static const uint32_t CAN_ID_INFO_REQUEST = 0x100050FE; //0x108050FE;
+static const uint32_t CAN_ID_INFO_REQUEST = 0x110050FE; //0x108050FE;
 static const uint32_t CAN_ID_SET = 0x108180FE;
 static const uint32_t CAN_ID_MASK = 0x0000FF00;
 
