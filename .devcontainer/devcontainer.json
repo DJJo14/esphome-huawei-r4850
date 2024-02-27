@@ -27,5 +27,18 @@
 		}
 	],
 	"workspaceMount": "source=${localWorkspaceFolder},target=/config,type=bind,consistency=cached",
-	"workspaceFolder": "/config"
+	"workspaceFolder": "/config",
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-python.autopep8",
+				"ms-python.debugpy",
+				"ms-python.python",
+				"ms-python.vscode-pylance",
+				"ms-vscode.cpptools-extension-pack",
+				"ms-vscode.cpptools-themes",
+				"ms-vscode.cpptools"
+			]
+		}
+	}
 }
