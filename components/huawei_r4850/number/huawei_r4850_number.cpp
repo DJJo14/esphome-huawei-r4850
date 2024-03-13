@@ -4,17 +4,19 @@
 namespace esphome {
 namespace huawei_r4850 {
 
-static const int8_t SET_VOLTAGE_FUNCTION = 0x0;
-static const int8_t SET_CURRENT_FUNCTION = 0x3;
 
 void HuaweiR4850Number::control(float value) {
+  int32_t raw;
   switch (this->functionCode_) {
-  case SET_VOLTAGE_FUNCTION:
-    parent_->set_output_voltage(value);
-    // this->publish_state(value);
+  case R48XX_DATA_SET_VOLTAGE:
+  case R48XX_DATA_SET_VOLTAGE_DEFAULT:
+    raw = 1024.0 * value;
+    parent_->set_value_uint32(this->functionCode_, 0, raw);;
     break;
-  case SET_CURRENT_FUNCTION:
-    parent_->set_max_output_current(value);
+  case R48XX_DATA_SET_CURRENT:
+  case R48XX_DATA_SET_CURRENT_DEFAULT:
+    raw = R48XX_CURRENT_SCALLER * value;
+    parent_->set_value_uint32(this->functionCode_, 0, raw);
     break;
 
   default:

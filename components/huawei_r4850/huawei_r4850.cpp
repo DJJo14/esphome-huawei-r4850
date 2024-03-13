@@ -5,7 +5,6 @@
 #include "esphome/core/component.h"
 #include "esphome/core/log.h"
 
-
 namespace esphome {
 namespace huawei_r4850 {
 
@@ -19,14 +18,6 @@ static const uint32_t CAN_ID_SET = 0x108180FE;
 static const uint32_t CAN_ID_SET_CONFORM = 0x1081807F;
 static const uint32_t CAN_ID_MASK = 0x0000FFFE;
 
-static const uint16_t R48XX_DATA_SET_VOLTAGE = 0x0100;
-static const uint16_t R48XX_DATA_SET_VOLTAGE_DEFAULT = 0x0101;
-static const uint16_t R48XX_DATA_SET_OVERVOLTAGE_PROTECT = 0x0102;
-static const uint16_t R48XX_DATA_SET_CURRENT = 0x0103;
-static const uint16_t R48XX_DATA_SET_CURRENT_DEFAULT = 0x0104;
-static const uint16_t R48XX_DATA_SET_INPUT_AC_CURRENT = 0x0109;
-
-static const uint16_t R48xx_DATA_POWER_STATE = 0x0132;
 
 static const uint16_t R48xx_DATA_OPERATION_TIME = 0x010E;
 static const uint16_t R48xx_DATA_INPUT_POWER = 0x0170;
@@ -84,7 +75,10 @@ void HuaweiR4850Component::update() {
     this->publish_sensor_state_(this->output_voltage_sensor_, NAN);
     this->publish_sensor_state_(this->output_temp_sensor_, NAN);
     this->publish_sensor_state_(this->efficiency_sensor_, NAN);
-    this->publish_number_state_(this->max_output_current_number_, NAN);
+    this->publish_number_state_(this->output_current_number_, NAN);
+    this->publish_number_state_(this->output_current_default_number_, NAN);
+    this->publish_number_state_(this->output_voltage_number_, NAN);
+    this->publish_number_state_(this->output_voltage_default_number_, NAN);
     this->publish_sensor_state_(this->alarm_state_sensor_, NAN);
   }
 }
@@ -136,22 +130,26 @@ void HuaweiR4850Component::set_offline_values() {
   if (output_voltage_number_) {
     set_output_voltage(output_voltage_number_->state, true);
   };
-  if (max_output_current_number_) {
-    set_max_output_current(max_output_current_number_->state, true);
+  if (output_current_number_) {
+    set_max_output_current(output_current_number_->state, true);
   }
 }
 
-void HuaweiR4850Component::set_value_uint32(uint16_t functioncode,
+void HuaweiR4850Component::set_value_uint32(uint16_t functioncode, bool enable,
                                             uint32_t value) {
-  uint32_t raw = (uint32_t)value;
-  std::vector<uint8_t> data = {(uint8_t)(functionCode >> 8),
-                               (uint8_t)(functionCode & 0XFF),
+  std::vector<uint8_t> data = {(uint8_t)(functioncode >> 8),
+                               (uint8_t)(functioncode & 0XFF),
                                0x0,
                                0x0,
-                               (uint8_t)(raw >> 24),
-                               (uint8_t)(raw >> 16),
-                               (uint8_t)(raw >> 8),
-                               (uint8_t)raw};
+                               (uint8_t)(value >> 24),
+                               (uint8_t)(value >> 16),
+                               (uint8_t)(value >> 8),
+                               (uint8_t)value};
+  if (enable)
+    data[3] = 0x00;
+  else
+    data[3] = 0x01;
+
   this->canbus->send_data(CAN_ID_SET, true, data);
 }
 
@@ -172,13 +170,24 @@ void HuaweiR4850Component::on_frame(uint32_t can_id, bool rtr,
       if (!(data[0] & 0xF0))
         this->publish_number_state_(this->output_voltage_number_, conv_value);
       break;
+
     case R48XX_DATA_SET_VOLTAGE_DEFAULT:
+      conv_value = value / 1024.0;
+      ESP_LOGI(TAG, "Voltage default Conform %.2f %02X", conv_value, data[0] & 0xF0);
+      if (!(data[0] & 0xF0))
+        this->publish_number_state_(this->output_voltage_default_number_, conv_value);
       break;
+
     case R48XX_DATA_SET_CURRENT:
       conv_value = value / R48XX_CURRENT_SCALLER;
-      this->publish_number_state_(this->max_output_current_number_, conv_value);
+      this->publish_number_state_(this->output_current_number_, conv_value);
       break;
+
     case R48XX_DATA_SET_CURRENT_DEFAULT:
+      conv_value = value / R48XX_CURRENT_SCALLER;
+      this->publish_number_state_(this->output_current_default_number_, conv_value);
+      break;
+
     case R48XX_DATA_SET_OVERVOLTAGE_PROTECT:
     case R48XX_DATA_SET_INPUT_AC_CURRENT:
       break;
@@ -231,7 +240,7 @@ void HuaweiR4850Component::on_frame(uint32_t can_id, bool rtr,
 
     case R48xx_DATA_OUTPUT_CURRENT_MAX:
       conv_value = value / R48XX_CURRENT_SCALLER;
-      this->publish_number_state_(this->max_output_current_number_, conv_value);
+      this->publish_number_state_(this->output_current_number_, conv_value);
       this->publish_sensor_state_(this->max_output_current_sensor_, conv_value);
       ESP_LOGI(TAG, "Max Output current: %f", conv_value);
       break;
@@ -271,20 +280,20 @@ void HuaweiR4850Component::on_frame(uint32_t can_id, bool rtr,
       ESP_LOGI(TAG, "Alarm state: %08X %02X", value, data[6]);
       this->publish_switch_state_(this->power_switch_, (data[6] & 0x02) == 0);
       // if (this->output_voltage_number_->has_state() == false)
-      {
-        static uint16_t req_val = R48XX_DATA_SET_VOLTAGE;
-        // req_val++;
-        std::vector<uint8_t> send_data = {(uint8_t)(req_val >> 8),
-                                          (uint8_t)(req_val & 0xFF),
-                                          0,
-                                          0,
-                                          0,
-                                          0,
-                                          0,
-                                          0};
-        this->canbus->send_data(0x108150FE, true, send_data);
-        ESP_LOGI(TAG, "request  %02X %02X", send_data[0], send_data[1]);
-      }
+      // {
+      //   static uint16_t req_val = R48XX_DATA_SET_VOLTAGE;
+      //   // req_val++;
+      //   std::vector<uint8_t> send_data = {(uint8_t)(req_val >> 8),
+      //                                     (uint8_t)(req_val & 0xFF),
+      //                                     0,
+      //                                     0,
+      //                                     0,
+      //                                     0,
+      //                                     0,
+      //                                     0};
+      //   this->canbus->send_data(0x108150FE, true, send_data);
+      //   ESP_LOGI(TAG, "request  %02X %02X", send_data[0], send_data[1]);
+      // }
       // this usually is the last message
       break;
 

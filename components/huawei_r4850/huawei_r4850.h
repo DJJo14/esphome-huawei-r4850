@@ -9,6 +9,15 @@
 
 #define R48XX_CURRENT_SCALLER 20.0
 
+
+#define R48XX_DATA_SET_VOLTAGE (0x0100)
+#define R48XX_DATA_SET_VOLTAGE_DEFAULT (0x0101)
+#define R48XX_DATA_SET_OVERVOLTAGE_PROTECT (0x0102)
+#define R48XX_DATA_SET_CURRENT (0x0103)
+#define R48XX_DATA_SET_CURRENT_DEFAULT (0x0104)
+#define R48XX_DATA_SET_INPUT_AC_CURRENT (0x0109)
+#define R48xx_DATA_POWER_STATE (0x0132)
+
 namespace esphome {
 namespace huawei_r4850 {
 
@@ -22,6 +31,8 @@ public:
   void set_max_output_current(float value, bool offline = false);
   void set_power(bool value);
   void set_offline_values();
+  void set_value_uint32(uint16_t functioncode, bool enable,
+                                            uint32_t value);
 
   void set_operation_hours_sensor(sensor::Sensor *operation_hours_sensor) {
     operation_hours_sensor_ = operation_hours_sensor;
@@ -67,9 +78,15 @@ public:
   void set_output_voltage_number(number::Number *output_voltage_number) {
     output_voltage_number_ = output_voltage_number;
   }
+  void set_output_voltage_default_number(number::Number *output_voltage_default_number) {
+    output_voltage_default_number_ = output_voltage_default_number;
+  }
   void
-  set_max_output_current_number(number::Number *max_output_current_number) {
-    max_output_current_number_ = max_output_current_number;
+  set_output_current_number(number::Number *output_current_number) {
+    output_current_number_ = output_current_number;
+  }
+  void set_output_current_default_number(number::Number *output_current_default_number) {
+    output_current_default_number_ = output_current_default_number;
   }
 
   void set_power_switch(switch_::Switch *power_switch) {
@@ -95,7 +112,10 @@ protected:
   sensor::Sensor *alarm_state_sensor_{nullptr};
 
   number::Number *output_voltage_number_{nullptr};
-  number::Number *max_output_current_number_{nullptr};
+  number::Number *output_voltage_default_number_{nullptr};
+  number::Number *output_current_number_{nullptr};
+  number::Number *output_current_default_number_{nullptr};
+  
 
   switch_::Switch *power_switch_{nullptr};
 
