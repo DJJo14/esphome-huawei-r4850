@@ -180,11 +180,13 @@ void HuaweiR4850Component::on_frame(uint32_t can_id, bool rtr,
 
     case R48XX_DATA_SET_CURRENT:
       conv_value = value / R48XX_CURRENT_SCALLER;
+      ESP_LOGI(TAG, "Current Conform %.2f %02X", conv_value, data[0] & 0xF0);
       this->publish_number_state_(this->output_current_number_, conv_value);
       break;
 
     case R48XX_DATA_SET_CURRENT_DEFAULT:
       conv_value = value / R48XX_CURRENT_SCALLER;
+      ESP_LOGI(TAG, "Current default Conform %.2f %02X", conv_value, data[0] & 0xF0);
       this->publish_number_state_(this->output_current_default_number_, conv_value);
       break;
 
@@ -304,12 +306,12 @@ void HuaweiR4850Component::on_frame(uint32_t can_id, bool rtr,
     }
     this->lastUpdate_ = millis();
   } else if ((CAN_ID_BARCODE & CAN_ID_MASK) == (CAN_ID_MASK & can_id)) {
-    ESP_LOGI(TAG, "Unknown ID 0x%8X, 0x%04X %c%c%c%c%c%c", can_id, signal_id,
-             data[2], data[3], data[4], data[5], data[6], data[7]);
+    // ESP_LOGI(TAG, "Unknown ID 0x%8X, 0x%04X %c%c%c%c%c%c", can_id, signal_id,
+    //          data[2], data[3], data[4], data[5], data[6], data[7]);
   } else {
-    ESP_LOGI(TAG, "Unknown ID 0x%8X, 0x%04X %02X %02X %02X %02X %02X %02X",
-             can_id, signal_id, data[2], data[3], data[4], data[5], data[6],
-             data[7]);
+    // ESP_LOGI(TAG, "Unknown ID 0x%8X, 0x%04X %02X %02X %02X %02X %02X %02X",
+    //          can_id, signal_id, data[2], data[3], data[4], data[5], data[6],
+    //          data[7]);
   }
 }
 

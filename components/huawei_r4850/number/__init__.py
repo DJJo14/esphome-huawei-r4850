@@ -56,7 +56,7 @@ CONFIG_SCHEMA = cv.All(
             cv.Optional(CONF_OUTPUT_VOLTAGE_DEFAULT): number.NUMBER_SCHEMA.extend(
                 {
                     cv.GenerateID(): cv.declare_id(HuaweiR4850Number),
-                    cv.Optional(CONF_MIN_VALUE, default=42): cv.float_,
+                    cv.Optional(CONF_MIN_VALUE, default=48): cv.float_,
                     cv.Optional(CONF_MAX_VALUE, default=58): cv.float_,
                     cv.Optional(CONF_STEP, default=0.1): cv.float_,
                     cv.Optional(CONF_ICON, default=ICON_FLASH): cv.icon,
