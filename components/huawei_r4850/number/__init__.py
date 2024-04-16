@@ -24,6 +24,7 @@ CONF_OUTPUT_VOLTAGE = "output_voltage"
 CONF_OUTPUT_VOLTAGE_DEFAULT = "output_voltage_default"
 CONF_MAX_OUTPUT_CURRENT = "max_output_current"
 CONF_MAX_OUTPUT_CURRENT_DEFAULT = "max_output_current_default"
+CONF_INPUT_CURRENT_LIMIT = "input_current_limit"
 
 
 HuaweiR4850Number = huawei_r4850_ns.class_(
@@ -52,7 +53,6 @@ CONFIG_SCHEMA = cv.All(
                     ): cv.entity_category,
                 }
             ),
-            cv.GenerateID(CONF_HUAWEI_R4850_ID): cv.use_id(HuaweiR4850Component),
             cv.Optional(CONF_OUTPUT_VOLTAGE_DEFAULT): number.NUMBER_SCHEMA.extend(
                 {
                     cv.GenerateID(): cv.declare_id(HuaweiR4850Number),
@@ -90,6 +90,24 @@ CONFIG_SCHEMA = cv.All(
                 }
             ),
             cv.Optional(CONF_MAX_OUTPUT_CURRENT_DEFAULT): number.NUMBER_SCHEMA.extend(
+                {
+                    cv.GenerateID(): cv.declare_id(HuaweiR4850Number),
+                    cv.Optional(CONF_MIN_VALUE, default=0): cv.float_,
+                    cv.Optional(CONF_MAX_VALUE, default=60): cv.float_,
+                    cv.Optional(CONF_STEP, default=0.1): cv.float_,
+                    cv.Optional(CONF_ICON, default=ICON_CURRENT_AC): cv.icon,
+                    cv.Optional(
+                        CONF_UNIT_OF_MEASUREMENT, default=UNIT_AMPERE
+                    ): cv.string_strict,
+                    cv.Optional(CONF_MODE, default="BOX"): cv.enum(
+                        number.NUMBER_MODES, upper=True
+                    ),
+                    cv.Optional(
+                        CONF_ENTITY_CATEGORY, default=ENTITY_CATEGORY_NONE
+                    ): cv.entity_category,
+                }
+            ),
+            cv.Optional(CONF_INPUT_CURRENT_LIMIT): number.NUMBER_SCHEMA.extend(
                 {
                     cv.GenerateID(): cv.declare_id(HuaweiR4850Number),
                     cv.Optional(CONF_MIN_VALUE, default=0): cv.float_,
@@ -166,3 +184,16 @@ async def to_code(config):
         )
         cg.add(getattr(hub, "set_output_current_default_number")(var))
         cg.add(var.set_parent(hub, cg.RawExpression("R48XX_DATA_SET_CURRENT_DEFAULT")))
+    if config[CONF_INPUT_CURRENT_LIMIT]:
+        conf = config[CONF_INPUT_CURRENT_LIMIT]
+        var = cg.new_Pvariable(conf[CONF_ID])
+        await cg.register_component(var, conf)
+        await number.register_number(
+            var,
+            conf,
+            min_value=conf[CONF_MIN_VALUE],
+            max_value=conf[CONF_MAX_VALUE],
+            step=conf[CONF_STEP],
+        )
+        cg.add(getattr(hub, "set_input_currentlimit_number")(var))
+        cg.add(var.set_parent(hub, cg.RawExpression("R48XX_DATA_SET_INPUT_AC_CURRENT")))

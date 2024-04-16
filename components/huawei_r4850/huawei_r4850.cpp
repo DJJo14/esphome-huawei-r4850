@@ -153,6 +153,16 @@ void HuaweiR4850Component::set_value_uint32(uint16_t functioncode, bool enable,
   this->canbus->send_data(CAN_ID_SET, true, data);
 }
 
+uint32_t HuaweiR4850Component::get_input_currentlimit_number(void)
+{
+  return (uint32_t) this->input_currentlimit_number_->state;
+}
+
+bool HuaweiR4850Component::get_input_currentlimit_switch(void)
+{
+  return this->input_currentlimit_switch_->state;
+}
+
 void HuaweiR4850Component::on_frame(uint32_t can_id, bool rtr,
                                     std::vector<uint8_t> &data) {
   uint16_t signal_id = data[1] + ((data[0] & 0xF) << 8);
@@ -192,6 +202,10 @@ void HuaweiR4850Component::on_frame(uint32_t can_id, bool rtr,
 
     case R48XX_DATA_SET_OVERVOLTAGE_PROTECT:
     case R48XX_DATA_SET_INPUT_AC_CURRENT:
+      conv_value = value / 1024.0;
+      ESP_LOGI(TAG, "input Currentlimit Conform %.2f %02X %02X", conv_value, data[3], data[0] & 0xF0);
+      this->publish_number_state_(this->input_currentlimit_number_, conv_value);
+      this->publish_switch_state_(this->input_currentlimit_switch_, (data[3] & 0x01) == 0);
       break;
 
     case R48xx_DATA_POWER_STATE:

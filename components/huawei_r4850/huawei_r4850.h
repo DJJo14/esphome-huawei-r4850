@@ -34,6 +34,9 @@ public:
   void set_value_uint32(uint16_t functioncode, bool enable,
                                             uint32_t value);
 
+  uint32_t get_input_currentlimit_number( void );
+  bool get_input_currentlimit_switch( void );
+
   void set_operation_hours_sensor(sensor::Sensor *operation_hours_sensor) {
     operation_hours_sensor_ = operation_hours_sensor;
   }
@@ -88,10 +91,18 @@ public:
   void set_output_current_default_number(number::Number *output_current_default_number) {
     output_current_default_number_ = output_current_default_number;
   }
+  void set_input_currentlimit_number(number::Number *input_currentlimit_number) {
+    input_currentlimit_number_ = input_currentlimit_number;
+  }
 
   void set_power_switch(switch_::Switch *power_switch) {
     power_switch_ = power_switch;
   }
+
+  void set_input_currentlimit_switch(switch_::Switch *input_currentlimit_switch) {
+    input_currentlimit_switch_ = input_currentlimit_switch;
+  }
+  
 
 protected:
   canbus::Canbus *canbus;
@@ -115,9 +126,12 @@ protected:
   number::Number *output_voltage_default_number_{nullptr};
   number::Number *output_current_number_{nullptr};
   number::Number *output_current_default_number_{nullptr};
+  number::Number *input_currentlimit_number_{nullptr};
+  
   
 
   switch_::Switch *power_switch_{nullptr};
+  switch_::Switch *input_currentlimit_switch_{nullptr};
 
   void on_frame(uint32_t can_id, bool rtr, std::vector<uint8_t> &data);
 

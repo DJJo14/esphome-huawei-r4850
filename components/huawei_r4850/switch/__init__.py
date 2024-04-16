@@ -10,6 +10,7 @@ HuaweiR4850Switch = huawei_r4850_ns.class_(
 )
 
 CONF_POWER = "power"
+CONF_CURRENTLIMIT = "currentlimit"
 
 CONFIG_SCHEMA = cv.Schema(
     {
@@ -19,17 +20,28 @@ CONFIG_SCHEMA = cv.Schema(
                 cv.GenerateID(): cv.declare_id(HuaweiR4850Switch)
             }
         ).extend(cv.COMPONENT_SCHEMA),
+        cv.Optional(CONF_CURRENTLIMIT): switch.SWITCH_SCHEMA.extend(
+            {
+                cv.GenerateID(): cv.declare_id(HuaweiR4850Switch)
+            }
+        ).extend(cv.COMPONENT_SCHEMA),
     }
 )
 
 async def to_code(config):
     hub = await cg.get_variable(config[CONF_HUAWEI_R4850_ID])
-    conf = config[CONF_POWER]
-    var = cg.new_Pvariable(conf[CONF_ID])
-    await cg.register_component(var, conf)
-    await switch.register_switch(var, conf)
-    cg.add(getattr(hub, "set_power_switch")(var))
-    cg.add(var.set_parent(hub))
+    to_code_list = [
+        [CONF_POWER, "set_power_switch", "R48xx_DATA_POWER_STATE"],
+        [CONF_CURRENTLIMIT, "set_input_currentlimit_switch", "R48XX_DATA_SET_INPUT_AC_CURRENT"],        
+    ]
+    for name, register_hub_function, define_var in to_code_list:
+        if name in config:
+            conf = config[name]
+            var = cg.new_Pvariable(conf[CONF_ID])
+            await cg.register_component(var, conf)
+            await switch.register_switch(var, conf)
+            cg.add(getattr(hub, register_hub_function)(var))
+            cg.add(var.set_parent(hub, cg.RawExpression(define_var)))
 
 
 
